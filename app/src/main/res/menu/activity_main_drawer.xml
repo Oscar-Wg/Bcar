@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:checked="true"
+            android:id="@+id/navigation_list"
+            android:icon="@drawable/ic_list"
+            android:title="@string/navigation_list" />
+        <item
+            android:id="@+id/navigation_notification"
+            android:icon="@drawable/ic_notification"
+            android:title="@string/navigation_notification" />
+        <item
+            android:id="@+id/navigation_map"
+            android:icon="@drawable/ic_map"
+            android:title="@string/navigation_map" />
+        <item
+            android:id="@+id/navigation_more"
+            android:icon="@drawable/ic_more"
+            android:title="@string/navigation_more" />
+    </group>
+
+
+    <group android:checkableBehavior="single">
+        <item
+            android:icon="@drawable/ic_setting"
+            android:id="@+id/navigation_setting"
+            android:title="設定" />
+        <item
+            android:icon="@drawable/ic_about"
+            android:id="@+id/navigation_about"
+            android:title="關於" />
+    </group>
+
+</menu>

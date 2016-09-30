@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Bcar</string>
+
+    <string name="navigation_list">列表</string>
+    <string name="navigation_notification">通知</string>
+    <string name="navigation_map">地圖</string>
+    <string name="navigation_more">更多</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string-array name="car_type_list">
+        <item>其它</item>
+        <item>機車</item>
+        <item>汽車</item>
+        <item>檔車</item>
+    </string-array>
+</resources>
