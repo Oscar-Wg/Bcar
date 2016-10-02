@@ -28,14 +28,18 @@ public class BLEClient {
 
     protected BLEClient(MainActivity Activity) {
         activity = Activity;
-        bluetoothManager = (BluetoothManager) Activity.getSystemService(Context.BLUETOOTH_SERVICE);
+        refreshBLE();
+    }
+
+    private void refreshBLE() {
+        bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
-
-        bluetoothAdapter.setName("UVA Auto-Piloting");
     }
 
     public void BLEScan(boolean crl) {
+        if (bluetoothLeScanner == null)
+            refreshBLE();
         if (crl != SCAN_STATUS)
             if (crl) {
 

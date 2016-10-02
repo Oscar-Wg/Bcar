@@ -67,7 +67,7 @@ public class list_fragment extends Fragment {
         SaveDevicesList = new ArrayList<bleKeyRing>();
         SaveDevicesAdapter = new ListAdapter();
         SaveDevicesAdapter.setList(SaveDevicesList);
-        SaveDevicesAdapter.setAvtivity(getActivity());
+        SaveDevicesAdapter.setActivity(getActivity());
 
         SaveDevicesListView= (SwipeMenuListView)layout.findViewById(R.id.listView);
         SaveDevicesListView.setAdapter(SaveDevicesAdapter);
@@ -86,6 +86,55 @@ public class list_fragment extends Fragment {
         //SaveDevicesList.add(new bleKeyRing(getActivity(), this, SaveDevicesAdapter, "以上都是假item", dataFormat.MOTORCYCLE, null, false));
 
         return layout;
+    }
+
+    @Override
+    public void onResume() {
+        Log.d("DEBUG", "onResume");
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        Log.d("DEBUG", "onPause");
+        super.onPause();
+    }
+
+
+    @Override
+    public void onStop() {
+        Log.d("DEBUG", "onStop");
+        super.onResume();
+    }
+
+    @Override
+    public void onDestroyView() {
+        Log.d("DEBUG", "onDestroyView");
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d("DEBUG", "onDestroy");
+        super.onDestroy();
+    }
+
+    @Override
+    public void onDetach() {
+        Log.d("DEBUG", "onDetach");
+        super.onDetach();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        Log.d("DEBUG", "onSaveInstanceState");
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        Log.d("DEBUG", "onViewStateRestored");
+        super.onViewStateRestored(savedInstanceState);
     }
 
     // BLE Scan callback
@@ -242,6 +291,11 @@ public class list_fragment extends Fragment {
     };
 
     private final SwipeMenuCreator SaveDevicesListCreator = new SwipeMenuCreator() {
+
+        private int dp2px(int dp) {
+            return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
+        }
+
         @Override
         public void create(SwipeMenu menu) {
             SwipeMenuItem editItem = new SwipeMenuItem(getActivity().getApplicationContext());
@@ -257,10 +311,6 @@ public class list_fragment extends Fragment {
             menu.addMenuItem(deleteItem);
         }
     };
-
-    private int dp2px(int dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
-    }
 
     private bleKeyRing getKeyRingByDevice(BluetoothDevice dev) {
         for (int i=0; i<SaveDevicesList.size(); i++)

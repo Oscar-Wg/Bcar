@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="8dp">
+
+    <ImageView
+        android:id="@+id/notification_icon"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/visitor_icon" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/notification_icon">
+
+        <TextView
+            android:id="@+id/msg"
+            android:paddingRight="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="37dp"
+            android:gravity="fill_vertical"
+            android:layout_marginLeft="10dp"
+            android:text="..."
+            android:textColor="@android:color/black"
+            android:textSize="16dp" />
+
+        <TextView
+            android:textColor="#888"
+            android:textAlignment="textEnd"
+            android:id="@+id/date"
+            android:paddingRight="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:text="2016-09-30 11:17"
+            android:textSize="12dp" />
+
+    </LinearLayout>
+
+</RelativeLayout>

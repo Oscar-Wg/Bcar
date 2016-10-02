@@ -13,7 +13,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -64,6 +63,17 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     }
 
     @Override
+    protected void onResume() {
+        if (warming && mBLEClient.isEnabled()) {
+            warming = false;
+            selectItem(fragmentPos);
+        }
+        if (!mBLEClient.isEnabled() && fragmentPos != 4 && fragmentPos != 5)
+            checkBluetooth();
+        super.onResume();
+    }
+
+    @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -71,29 +81,6 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         } else {
             //super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        /*
-        if (id == R.id.action_settings) {
-            return true;
-        }*/
-
-        return super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -128,6 +115,8 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     public void clearScanList() {
         foundDevicesArray.clear();
     }
+
+    private boolean test = false;
 
     private void selectItem(int position) {
         Fragment fragment;
@@ -164,8 +153,9 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
                 fragment = list_fragment;
         }
 
-        fragmentPos = position;
+
         if (!warming || position == 4 || position == 5) {
+
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             ft.replace(R.id.content_fragment, fragment);
             ft.addToBackStack(null);
@@ -175,6 +165,8 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             setActionBarTitle(position);
         } else if (warming)
             checkBluetooth();
+
+        fragmentPos = position;
     }
 
     private void setActionBarTitle(int position) {
@@ -199,7 +191,12 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
                 title = getResources().getString(R.string.navigation_list);
         }
 
+        if (position == 5)
+            ((Toolbar)findViewById(R.id.toolbar)).setBackgroundColor(getResources().getColor(R.color.colorAccent));
+        else
+            ((Toolbar)findViewById(R.id.toolbar)).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
         ((Toolbar)findViewById(R.id.toolbar)).setTitle(title);
+
     }
 
     private boolean warming;
@@ -235,16 +232,5 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             }
         }
     };
-
-    @Override
-    protected void onResume() {
-        if (warming && mBLEClient.isEnabled()) {
-            warming = false;
-            selectItem(fragmentPos);
-        }
-        if (!mBLEClient.isEnabled() && fragmentPos != 4 && fragmentPos != 5)
-            checkBluetooth();
-        super.onResume();
-    }
 
 }

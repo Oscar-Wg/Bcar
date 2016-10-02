@@ -18,7 +18,7 @@ public class ListAdapter extends BaseAdapter {
     private ArrayList<bleKeyRing> SaveDevicesList;
     private Activity activity;
 
-    public void setAvtivity(Activity activity) {
+    public void setActivity(Activity activity) {
         this.activity = activity;
     }
 
