@@ -1,4 +1,4 @@
-package fypnctucs.bcar;
+package fypnctucs.bcar.ble;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -10,6 +10,8 @@ import android.content.Context;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import fypnctucs.bcar.MainActivity;
 
 /**
  * Created by kamfu.wong on 28/9/2016.
@@ -26,7 +28,7 @@ public class BLEClient {
     private boolean SCAN_STATUS = false;
     private MainActivity activity;
 
-    protected BLEClient(MainActivity Activity) {
+    public BLEClient(MainActivity Activity) {
         activity = Activity;
         refreshBLE();
     }

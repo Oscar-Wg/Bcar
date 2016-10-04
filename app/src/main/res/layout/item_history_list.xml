@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true">
+
+        <TextView
+            android:id="@+id/address"
+            android:paddingRight="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:gravity="fill_vertical"
+            android:layout_marginLeft="10dp"
+            android:text="..."
+            android:textColor="@android:color/black"
+            android:textSize="17dp" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="23dp"
+            android:layout_alignParentTop="true">
+
+            <TextView
+                android:layout_weight="3"
+                android:textColor="#888"
+                android:id="@+id/date"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:text="2016-09-30 11:17"
+                android:textSize="14dp" />
+
+            <TextView
+                android:layout_weight="2"
+                android:textColor="#888"
+                android:id="@+id/latlng"
+                android:paddingRight="10dp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:text="經度:0   \n緯度:0"
+                android:textSize="9dp" />
+
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</RelativeLayout>

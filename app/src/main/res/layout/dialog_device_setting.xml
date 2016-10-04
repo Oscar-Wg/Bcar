@@ -34,7 +34,7 @@
             android:text="..."
             android:hint="車牌號碼 - 以識別不同裝置"
             android:ems="10"
-            android:id="@+id/KeyRingName"
+            android:id="@+id/deviceName"
             android:layout_weight="1" />
 
     </LinearLayout>
@@ -54,7 +54,7 @@
         <Spinner
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/KeyRingType"
+            android:id="@+id/deviceType"
             android:entries="@array/car_type_list"
             android:layout_weight="1" />
 

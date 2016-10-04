@@ -1,4 +1,4 @@
-package fypnctucs.bcar;
+package fypnctucs.bcar.device;
 
 import android.app.Activity;
 import android.view.View;
@@ -9,31 +9,34 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import fypnctucs.bcar.R;
+import fypnctucs.bcar.dataFormat;
+
 /**
  * Created by kamfu.wong on 29/9/2016.
  */
 
-public class ListAdapter extends BaseAdapter {
+public class DeviceListAdapter extends BaseAdapter {
 
-    private ArrayList<bleKeyRing> SaveDevicesList;
+    private ArrayList<bleDevice> devicesList;
     private Activity activity;
 
     public void setActivity(Activity activity) {
         this.activity = activity;
     }
 
-    public void setList(ArrayList<bleKeyRing> SaveDevicesList) {
-        this.SaveDevicesList = SaveDevicesList;
+    public void setList(ArrayList<bleDevice> devicesList) {
+        this.devicesList = devicesList;
     }
 
     @Override
     public int getCount() {
-        return SaveDevicesList.size();
+        return devicesList.size();
     }
 
     @Override
-    public bleKeyRing getItem(int position) {
-        return SaveDevicesList.get(position);
+    public bleDevice getItem(int position) {
+        return devicesList.get(position);
     }
 
     @Override
@@ -44,12 +47,12 @@ public class ListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = View.inflate(activity.getApplicationContext(), R.layout.item_list_app, null);
-            new ListAdapter.ViewHolder(convertView);
+            convertView = View.inflate(activity.getApplicationContext(), R.layout.item_device_list, null);
+            new DeviceListAdapter.ViewHolder(convertView);
         }
 
-        ViewHolder holder = (ListAdapter.ViewHolder) convertView.getTag();
-        bleKeyRing item = getItem(position);
+        ViewHolder holder = (DeviceListAdapter.ViewHolder) convertView.getTag();
+        bleDevice item = getItem(position);
         holder.name.setText(item.getName());
         if (item.isConnected())
             holder.icon.setImageResource(dataFormat.CONNECT_DEVICE_ICON[item.getType()]);

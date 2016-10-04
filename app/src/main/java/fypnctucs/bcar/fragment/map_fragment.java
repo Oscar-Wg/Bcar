@@ -1,4 +1,4 @@
-package fypnctucs.bcar;
+package fypnctucs.bcar.fragment;
 
 import android.Manifest;
 import android.app.Fragment;
@@ -31,6 +31,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import fypnctucs.bcar.R;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -57,7 +59,7 @@ public class map_fragment extends Fragment implements LocationListener, Connecti
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        layout = inflater.inflate(R.layout.map_fragment, container, false);
+        layout = inflater.inflate(R.layout.fragment_map, container, false);
 
         configGoogleApiClient();
         configLocationRequest();
@@ -146,6 +148,7 @@ public class map_fragment extends Fragment implements LocationListener, Connecti
                 .addApi(LocationServices.API)
                 .build();
     }
+
     private void configLocationRequest() {
         locationRequest = new LocationRequest();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);

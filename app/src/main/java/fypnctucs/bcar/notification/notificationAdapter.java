@@ -1,4 +1,4 @@
-package fypnctucs.bcar;
+package fypnctucs.bcar.notification;
 
 import android.app.Activity;
 import android.view.View;
@@ -8,6 +8,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+
+import fypnctucs.bcar.R;
 
 /**
  * Created by kamfu.wong on 30/9/2016.
@@ -44,7 +46,7 @@ public class notificationAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = View.inflate(activity.getApplicationContext(), R.layout.notification_list, null);
+            convertView = View.inflate(activity.getApplicationContext(), R.layout.item_notification_list, null);
             new notificationAdapter.ViewHolder(convertView);
         }
 

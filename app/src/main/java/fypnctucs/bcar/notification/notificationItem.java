@@ -1,4 +1,6 @@
-package fypnctucs.bcar;
+package fypnctucs.bcar.notification;
+
+import fypnctucs.bcar.R;
 
 /**
  * Created by kamfu.wong on 30/9/2016.
@@ -12,11 +14,11 @@ public class notificationItem {
 
     private boolean read;
 
-    notificationItem() {
+    public notificationItem() {
         this(R.drawable.ic_notification, "--- unknown ---", "unknown");
     }
 
-    notificationItem(int icon, String date, String msg) {
+    public notificationItem(int icon, String date, String msg) {
         this.icon = icon;
         this.date = date;
         this.msg = msg;

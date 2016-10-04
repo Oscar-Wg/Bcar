@@ -1,16 +1,12 @@
-package fypnctucs.bcar;
+package fypnctucs.bcar.ble;
 
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -106,8 +102,10 @@ public class gattData {
     }
 
     // client
+    public gattData() {
+    }
 
-    gattData(BluetoothGatt tmp) {
+    public gattData(BluetoothGatt tmp) {
         bluetoothGatt = tmp;
         init();
 
@@ -139,36 +137,4 @@ public class gattData {
     }
 
     public void replaceCharacteristic(BluetoothGattCharacteristic c) { Characteristics.put(c.getUuid().toString(), c); }
-
-    // server
-
-    gattData(BluetoothGattServer tmp, BluetoothManager tmp2) {
-        bluetoothGattServer = tmp;
-        bluetoothManager = tmp2;
-        init();
-
-        for (BluetoothGattService service : bluetoothGattServer.getServices()) {
-            addService(service);
-            for (BluetoothGattCharacteristic characteristic : service.getCharacteristics())
-                addCharacteristic(characteristic);
-        }
-    }
-
-    public void updateCharacteristic(String uuid, byte[] value) {
-        getCharacteristic(uuid).setValue(value);
-    }
-
-    public void sentNotifyCharacteristic(String uuid, boolean crl) {
-        BluetoothGattCharacteristic c = getCharacteristic(uuid);
-        List<String> devices = new ArrayList<>();
-        for (BluetoothDevice device : bluetoothManager.getConnectedDevices(BluetoothProfile.GATT))
-            if (!devices.contains(device.getAddress())) {
-                bluetoothGattServer.notifyCharacteristicChanged(device, c, crl);
-                devices.add(device.getAddress());
-            }
-    }
-
-    public void sendResponse(BluetoothDevice device, int requestid, int status, int offset, byte[] value) {
-        bluetoothGattServer.sendResponse(device, requestid, status, offset, value);
-    }
 }

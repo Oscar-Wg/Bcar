@@ -1,4 +1,4 @@
-package fypnctucs.bcar;
+package fypnctucs.bcar.fragment;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -19,6 +19,10 @@ import com.baoyz.swipemenulistview.SwipeMenuListView.*;
 
 import java.util.ArrayList;
 
+import fypnctucs.bcar.R;
+import fypnctucs.bcar.notification.notificationAdapter;
+import fypnctucs.bcar.notification.notificationItem;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -37,7 +41,7 @@ public class notification_fragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        layout = inflater.inflate(R.layout.notification_fragment, container, false);
+        layout = inflater.inflate(R.layout.fragment_notification, container, false);
 
         notificationList = new ArrayList<notificationItem>();
         notificationListAdapter = new notificationAdapter();

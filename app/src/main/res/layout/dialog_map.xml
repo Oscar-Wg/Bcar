@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/bar_space"
+        android:background="@color/colorPrimaryDark"
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:id="@+id/map_header"
+        android:layout_below="@id/bar_space"
+        android:background="@color/colorAccent"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize">
+
+        <ImageView
+            android:paddingLeft="10dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:layout_width="?attr/actionBarSize"
+            android:layout_height="?attr/actionBarSize"
+            android:src="@drawable/ic_arrow_back"
+            android:id="@+id/map_backButton"/>
+
+        <TextView
+            android:textColor="#FFF"
+            android:text="地圖"
+            android:textSize="18dp"
+            android:paddingLeft="10dp"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/textView6"/>
+
+    </LinearLayout>
+
+    <com.google.android.gms.maps.MapView
+        android:layout_below="@id/map_header"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/history_map" />
+
+    <LinearLayout
+        android:id="@+id/xxxxxxx"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="horizontal" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/mylocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/xxxxxxx"
+        android:layout_alignParentRight="true"
+        android:layout_margin="@dimen/fab_margin"
+        app:srcCompat="@drawable/ic_localization" />
+
+</RelativeLayout>

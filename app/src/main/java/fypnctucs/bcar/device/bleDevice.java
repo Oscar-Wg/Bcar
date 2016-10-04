@@ -1,4 +1,4 @@
-package fypnctucs.bcar;
+package fypnctucs.bcar.device;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
@@ -7,40 +7,52 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothProfile;
 
+import fypnctucs.bcar.MainActivity;
+import fypnctucs.bcar.ble.gattData;
+import fypnctucs.bcar.fragment.list_fragment;
+
 /**
  * Created by kamfu.wong on 29/9/2016.
  */
 
-public class bleKeyRing {
+public class bleDevice {
 
-    private ListAdapter SaveDevicesAdapter;
+    private DeviceListAdapter devicesAdapter;
     private Activity activity;
     private list_fragment fragment;
 
+    private long id;
     private String  name;
     private int type;
-
     private BluetoothDevice device;
-    private BluetoothGatt bluetoothGatt;
 
+    private BluetoothGatt bluetoothGatt;
     protected gattData data;
 
     private boolean connected;
     private boolean connecting;
 
-    bleKeyRing() {
+    public bleDevice() {
         this(null, null, null, "unknow", 0, null, false);
     }
 
-    bleKeyRing(Activity activity, list_fragment fragment, ListAdapter SaveDevicesAdapter, String name, int type, BluetoothDevice device, boolean connected) {
+    public bleDevice(Activity activity, list_fragment fragment, DeviceListAdapter devicesAdapter, String name, int type, BluetoothDevice device, boolean connected) {
         this.activity = activity;
         this.fragment = fragment;
-        this.SaveDevicesAdapter = SaveDevicesAdapter;
+        this.devicesAdapter = devicesAdapter;
         this.name = name;
         this.type = type;
         this.device = device;
         this.connected = connected;
         connecting = false;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public BluetoothDevice getDevice() {

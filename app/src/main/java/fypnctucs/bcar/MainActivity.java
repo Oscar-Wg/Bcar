@@ -18,15 +18,24 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import fypnctucs.bcar.ble.BLEClient;
+import fypnctucs.bcar.fragment.about_fragment;
+import fypnctucs.bcar.fragment.list_fragment;
+import fypnctucs.bcar.fragment.map_fragment;
+import fypnctucs.bcar.fragment.more_fragment;
+import fypnctucs.bcar.fragment.notification_fragment;
+import fypnctucs.bcar.fragment.setting_fragment;
+import fypnctucs.bcar.fragment.warming_fragment;
+
 public class MainActivity extends AppCompatActivity implements OnNavigationItemSelectedListener {
 
     private Fragment list_fragment, map_fragment, notification_fragment, more_fragment, setting_fragment, about_fragment;
 
-    protected BLEClient mBLEClient;
+    public BLEClient mBLEClient;
 
     private int fragmentPos;
 
-    protected ArrayList<BluetoothDevice> foundDevicesArray;
+    public ArrayList<BluetoothDevice> foundDevicesArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -191,16 +200,12 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
                 title = getResources().getString(R.string.navigation_list);
         }
 
-        if (position == 5)
-            ((Toolbar)findViewById(R.id.toolbar)).setBackgroundColor(getResources().getColor(R.color.colorAccent));
-        else
-            ((Toolbar)findViewById(R.id.toolbar)).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
         ((Toolbar)findViewById(R.id.toolbar)).setTitle(title);
 
     }
 
     private boolean warming;
-    protected void setWarming(boolean warming) {
+    public void setWarming(boolean warming) {
         this.warming = warming;
     }
 

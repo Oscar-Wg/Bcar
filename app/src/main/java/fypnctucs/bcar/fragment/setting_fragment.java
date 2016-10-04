@@ -1,4 +1,4 @@
-package fypnctucs.bcar;
+package fypnctucs.bcar.fragment;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -7,6 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+
+import fypnctucs.bcar.MainActivity;
+import fypnctucs.bcar.R;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,7 +26,7 @@ public class setting_fragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        layout =  inflater.inflate(R.layout.setting_fragment, container, false);
+        layout =  inflater.inflate(R.layout.fragment_setting, container, false);
 
         BluetoothSwitch = (Switch)layout.findViewById(R.id.bluetoothSwitch);
 
