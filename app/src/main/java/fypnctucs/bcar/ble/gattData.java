@@ -13,7 +13,7 @@ import java.util.Set;
  * Created by kamfu.wong on 28/9/2016.
  */
 
-public class gattData {
+public class GattData {
     final static public String sort_uuid(String uuid) { return "0000"+uuid+"-0000-1000-8000-00805f9b34fb"; }
     final static public String custom_uuid(String uuid) { return "0001"+uuid+"-0000-1000-8000-00805f9babcd"; }
     final static private String[] setPROPERTY() {
@@ -102,10 +102,10 @@ public class gattData {
     }
 
     // client
-    public gattData() {
+    public GattData() {
     }
 
-    public gattData(BluetoothGatt tmp) {
+    public GattData(BluetoothGatt tmp) {
         bluetoothGatt = tmp;
         init();
 

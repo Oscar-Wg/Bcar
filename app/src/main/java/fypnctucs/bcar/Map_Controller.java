@@ -3,18 +3,9 @@ package fypnctucs.bcar;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -32,18 +23,11 @@ import java.util.List;
  * Created by kamfu.wong on 4/10/2016.
  */
 
-public class Map_Controller implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-
-    private GoogleApiClient googleApiClient;
-    private LocationRequest locationRequest;
-
-    private LocationManager lms;
-    private String bestProvider = LocationManager.GPS_PROVIDER;
+public class Map_Controller {
 
     private MapView mapView;
     private GoogleMap googleMap;
 
-    private Location currentLocation = null;
     private Marker currentLocationMarker = null;
     private List<Marker> markers;
 
@@ -57,11 +41,6 @@ public class Map_Controller implements LocationListener, GoogleApiClient.Connect
 
     private void init() {
         markers = new ArrayList<Marker>();
-        configGoogleApiClient();
-        locationServiceInitial();
-        configLocationRequest();
-        if (!googleApiClient.isConnected())
-            googleApiClient.connect();
 
         mapView.onCreate(new Bundle());
         mapView.onResume();
@@ -102,33 +81,7 @@ public class Map_Controller implements LocationListener, GoogleApiClient.Connect
                     .build()));
     }
 
-    public void showCurrentLocation() {
-        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-    }
-
-    private void locationServiceInitial() {
-        lms = (LocationManager) activity.getSystemService(activity.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        bestProvider = lms.getBestProvider(criteria, true);
-    }
-
-    private synchronized void configGoogleApiClient() {
-        googleApiClient = new GoogleApiClient.Builder(activity)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-    }
-
-    private void configLocationRequest() {
-        locationRequest = new LocationRequest();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setNumUpdates(1);
-    }
-
-    // LocationListener implements
-    @Override
-    public void onLocationChanged(Location location) {
+    public void showCurrentLocation(Location location) {
         if (currentLocationMarker == null) {
             MarkerOptions tmp = new MarkerOptions();
             tmp.draggable(false);
@@ -151,27 +104,6 @@ public class Map_Controller implements LocationListener, GoogleApiClient.Connect
                     .bearing(90)
                     .build()));
         }
-    }
-
-    // Connection Callback
-    @Override
-    public void onConnected(Bundle bundle) {
-        Log.d("DEBUG", "google services Connected");
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Toast.makeText(activity, "Google Services連線中斷. Code:"+i, Toast.LENGTH_LONG).show();
-    }
-
-    // OnConnectionFailedListener
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        int errorCode = connectionResult.getErrorCode();
-        if (errorCode == ConnectionResult.SERVICE_MISSING)
-            Toast.makeText(activity, "裝置沒有Google Services", Toast.LENGTH_LONG).show();
-        else
-            Toast.makeText(activity, "Google Services連線失敗. Code:"+errorCode, Toast.LENGTH_LONG).show();
     }
 
 }

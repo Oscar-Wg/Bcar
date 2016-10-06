@@ -10,7 +10,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import fypnctucs.bcar.R;
-import fypnctucs.bcar.dataFormat;
+import fypnctucs.bcar.DataFormat;
 
 /**
  * Created by kamfu.wong on 29/9/2016.
@@ -18,14 +18,14 @@ import fypnctucs.bcar.dataFormat;
 
 public class DeviceListAdapter extends BaseAdapter {
 
-    private ArrayList<bleDevice> devicesList;
+    private ArrayList<BleDevice> devicesList;
     private Activity activity;
 
     public void setActivity(Activity activity) {
         this.activity = activity;
     }
 
-    public void setList(ArrayList<bleDevice> devicesList) {
+    public void setList(ArrayList<BleDevice> devicesList) {
         this.devicesList = devicesList;
     }
 
@@ -35,7 +35,7 @@ public class DeviceListAdapter extends BaseAdapter {
     }
 
     @Override
-    public bleDevice getItem(int position) {
+    public BleDevice getItem(int position) {
         return devicesList.get(position);
     }
 
@@ -52,12 +52,12 @@ public class DeviceListAdapter extends BaseAdapter {
         }
 
         ViewHolder holder = (DeviceListAdapter.ViewHolder) convertView.getTag();
-        bleDevice item = getItem(position);
+        BleDevice item = getItem(position);
         holder.name.setText(item.getName());
         if (item.isConnected())
-            holder.icon.setImageResource(dataFormat.CONNECT_DEVICE_ICON[item.getType()]);
+            holder.icon.setImageResource(DataFormat.CONNECT_DEVICE_ICON[item.getType()]);
         else
-            holder.icon.setImageResource(dataFormat.DISCONNECT_DEVICE_ICON[item.getType()]);
+            holder.icon.setImageResource(DataFormat.DISCONNECT_DEVICE_ICON[item.getType()]);
         return convertView;
     }
 

@@ -6,16 +6,23 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothProfile;
+import android.location.Location;
+import android.location.LocationListener;
+import android.os.Bundle;
+import android.util.Log;
+
+import java.util.Calendar;
 
 import fypnctucs.bcar.MainActivity;
-import fypnctucs.bcar.ble.gattData;
+import fypnctucs.bcar.ble.GattData;
 import fypnctucs.bcar.fragment.list_fragment;
+import fypnctucs.bcar.history.History;
 
 /**
  * Created by kamfu.wong on 29/9/2016.
  */
 
-public class bleDevice {
+public class BleDevice {
 
     private DeviceListAdapter devicesAdapter;
     private Activity activity;
@@ -27,16 +34,16 @@ public class bleDevice {
     private BluetoothDevice device;
 
     private BluetoothGatt bluetoothGatt;
-    protected gattData data;
+    protected GattData data;
 
     private boolean connected;
     private boolean connecting;
 
-    public bleDevice() {
+    public BleDevice() {
         this(null, null, null, "unknow", 0, null, false);
     }
 
-    public bleDevice(Activity activity, list_fragment fragment, DeviceListAdapter devicesAdapter, String name, int type, BluetoothDevice device, boolean connected) {
+    public BleDevice(Activity activity, list_fragment fragment, DeviceListAdapter devicesAdapter, String name, int type, BluetoothDevice device, boolean connected) {
         this.activity = activity;
         this.fragment = fragment;
         this.devicesAdapter = devicesAdapter;
@@ -94,7 +101,7 @@ public class bleDevice {
     }
 
     public void initData() {
-        data = new gattData(bluetoothGatt);
+        data = new GattData(bluetoothGatt);
     }
 
     public void setConnected(boolean status) {
@@ -111,28 +118,22 @@ public class bleDevice {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 setConnected(true);
                 ((MainActivity)activity).status(getName() + " 已連線");
-
+                fragment.getLocation(DeviceOneTimeLocationListener);
                 //gatt.requestMtu(64);
-                //((MainActivity)getActivity()).status("requestMtu sent");
-
                 gatt.discoverServices();
-                //((MainActivity)activity).status("discoverServices sent");
             }
             if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                ((MainActivity)activity).status(getName() + " 連線中斷");
                 setConnected(false);
+                ((MainActivity)activity).status(getName() + " 連線中斷");
+                fragment.getLocation(DeviceOneTimeLocationListener);
             }
-            fragment.refrestAdapter();
+            fragment.refreshDevicesAdapter();
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                //((MainActivity)activity).status("onServicesDiscovered");
+            if (status == BluetoothGatt.GATT_SUCCESS)
                 initData();
-
-            }// else ((MainActivity)activity).status("onServicesDiscovered fail");
-
             super.onServicesDiscovered(gatt, status);
         }
 
@@ -184,5 +185,41 @@ public class bleDevice {
         }
     };
 
+    public String timeString(int[] t) {
+        String time = String.format("%04d", t[0]) + "-" +
+                String.format("%02d", t[1]) + "-" +
+                String.format("%02d", t[2]) + " " +
+                String.format("%02d", t[3]) + ":" +
+                String.format("%02d", t[4]) + ":" +
+                String.format("%02d", t[5]);
+        return time;
+    }
+
+    private LocationListener DeviceOneTimeLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            if (location != null) {
+                Calendar calendar = Calendar.getInstance();
+                int[] date = new int[]{calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND)};
+                Log.d("LocationListener", "History_insert");
+                fragment.History_insert(new History(device.getAddress(), timeString(date), location.getLatitude(), location.getLongitude()));
+                ((MainActivity)activity).StopLocationListener(this);
+            } else {
+                Log.d("onLocationChanged", "Location is null");
+            }
+        }
+
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle) {
+        }
+
+        @Override
+        public void onProviderEnabled(String s) {
+        }
+
+        @Override
+        public void onProviderDisabled(String s) {
+        }
+    };
 
 }

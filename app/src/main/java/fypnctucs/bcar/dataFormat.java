@@ -4,7 +4,7 @@ package fypnctucs.bcar;
  * Created by kamfu.wong on 29/9/2016.
  */
 
-public class dataFormat {
+public class DataFormat {
     final static public int SCOOTER = 1;
     final static public int CAR = 2;
     final static public int MOTORCYCLE = 3;

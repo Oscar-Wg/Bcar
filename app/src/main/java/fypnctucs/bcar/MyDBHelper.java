@@ -5,7 +5,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import fypnctucs.bcar.device.devicesDAO;
+import fypnctucs.bcar.device.BleDeviceDAO;
+import fypnctucs.bcar.history.History;
+import fypnctucs.bcar.history.HistoryDAO;
 
 /**
  * Created by kamfu.wong on 3/10/2016.
@@ -13,7 +15,7 @@ import fypnctucs.bcar.device.devicesDAO;
 
 public class MyDBHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "BCAR";
-    public static final int VERSION = 2;
+    public static final int VERSION = 1;
     private static SQLiteDatabase database;
 
     public MyDBHelper(Context context, String name, CursorFactory factory, int version) {
@@ -29,18 +31,22 @@ public class MyDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(devicesDAO.CREATE_TABLE);
+        db.execSQL(BleDeviceDAO.CREATE_TABLE);
+        db.execSQL(HistoryDAO.CREATE_TABLE);
+        HistoryDAO.insert(db, new History("68:4C:BD:E4:39:0C", "2016-10-04 00:54", 24.789261, 121.001489));
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + devicesDAO.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + BleDeviceDAO.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + HistoryDAO.TABLE_NAME);
         onCreate(db);
     }
 
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + devicesDAO.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + BleDeviceDAO.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + HistoryDAO.TABLE_NAME);
         onCreate(db);
     }
 }

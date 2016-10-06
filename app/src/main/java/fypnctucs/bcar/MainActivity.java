@@ -1,22 +1,31 @@
 package fypnctucs.bcar;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.NavigationView.OnNavigationItemSelectedListener;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import java.util.ArrayList;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import fypnctucs.bcar.ble.BLEClient;
 import fypnctucs.bcar.fragment.about_fragment;
@@ -32,43 +41,51 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     private Fragment list_fragment, map_fragment, notification_fragment, more_fragment, setting_fragment, about_fragment;
 
     public BLEClient mBLEClient;
+    private LocationManager mLocationManager;
 
     private int fragmentPos;
+    private boolean warming;
 
-    public ArrayList<BluetoothDevice> foundDevicesArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        warming = false;
-        foundDevicesArray = new ArrayList<>();
+        // Android M permission setting
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            permissionRequest();
+        }
 
+        // location init
+        LocationServiceInit();
+
+        // ble client init
+        warming = false;
+        mBLEClient = new BLEClient(this);
+        checkBluetooth();
+
+        // action bar inti
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // drawer layout init
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
+        // left nav init
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // fragment init
         list_fragment = map_fragment = notification_fragment = more_fragment = setting_fragment = about_fragment = null;
-
-        mBLEClient = new BLEClient(this);
-
         if (savedInstanceState == null) {
             fragmentPos = 0;
             selectItem(0);
-        } else {
-
         }
-
-        checkBluetooth();
     }
 
     @Override
@@ -92,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         }
     }
 
+    // nav switch crl
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -120,12 +138,6 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
-    public void clearScanList() {
-        foundDevicesArray.clear();
-    }
-
-    private boolean test = false;
 
     private void selectItem(int position) {
         Fragment fragment;
@@ -204,7 +216,44 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
     }
 
-    private boolean warming;
+    //Location Manager
+    private void LocationServiceInit() {
+        int googlePlayStatus = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (googlePlayStatus != ConnectionResult.SUCCESS) {
+            GooglePlayServicesUtil.getErrorDialog(googlePlayStatus, this, -1).show();
+            finish();
+        }
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+    }
+
+    public void getCurrentLocation(int LOCATION_UPDATE_MIN_TIME, int LOCATION_UPDATE_MIN_DISTANCE, LocationListener mLocationListener) {
+        boolean isGPSEnabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean isNetworkEnabled = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        if (!(isGPSEnabled || isNetworkEnabled))
+            status("error_location_provider");
+        else {
+            if (isNetworkEnabled) {
+                mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                        LOCATION_UPDATE_MIN_TIME, LOCATION_UPDATE_MIN_DISTANCE, mLocationListener);
+            }
+
+            if (isGPSEnabled) {
+                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                        LOCATION_UPDATE_MIN_TIME, LOCATION_UPDATE_MIN_DISTANCE, mLocationListener);
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                    return;
+            }
+        }
+    }
+
+    public void StopLocationListener(LocationListener locationListener) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            return;
+        mLocationManager.removeUpdates(locationListener);
+    }
+
+    // bluetooth warming crl
     public void setWarming(boolean warming) {
         this.warming = warming;
     }
@@ -223,6 +272,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         }
     }
 
+    // msg handler
     public void status(String msg) {
         mHandler.obtainMessage(TOAST_STATUS, msg).sendToTarget();
     }
@@ -238,4 +288,26 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         }
     };
 
+    // Android M permission setting
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
+    @TargetApi(Build.VERSION_CODES.M)
+    private void permissionRequest() {
+        if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setTitle("應用程式需要存取你的位置資訊");
+            builder.setPositiveButton(android.R.string.ok, null);
+
+            builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialogInterface) {
+                    requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+                }
+            });
+
+            builder.show();
+
+        }
+    }
 }
+

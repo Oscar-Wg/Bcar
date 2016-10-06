@@ -47,7 +47,6 @@ public class BLEClient {
 
                 activity.status("Start Scan");
 
-                activity.clearScanList();
                 SCAN_STATUS = true;
 
                 ScanFilter.Builder filterBuilder = new ScanFilter.Builder();
