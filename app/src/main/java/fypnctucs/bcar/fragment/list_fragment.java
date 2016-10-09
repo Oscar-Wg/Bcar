@@ -416,7 +416,11 @@ public class list_fragment extends Fragment {
             final BluetoothDevice device = result.getDevice();
             if (!foundDevicesArray.contains(device)) {
                 foundDevicesArray.add(device);
-                BLElistAdapter.add(device.getAddress() + " | " + device.getName());
+                BLElistAdapter.add(device.getAddress() + " | " + device.getName() + ' ' + result.getRssi());
+            } else {
+                int idx = foundDevicesArray.indexOf(device);
+                BLElistAdapter.remove(BLElistAdapter.getItem(idx));
+                BLElistAdapter.insert(device.getAddress() + " | " + device.getName() + ' ' + result.getRssi(), idx);
             }
         }
 
