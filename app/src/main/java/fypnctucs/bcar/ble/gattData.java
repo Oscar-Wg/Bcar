@@ -15,7 +15,7 @@ import java.util.Set;
 
 public class GattData {
     final static public String sort_uuid(String uuid) { return "0000"+uuid+"-0000-1000-8000-00805f9b34fb"; }
-    final static public String custom_uuid(String uuid) { return "0001"+uuid+"-0000-1000-8000-00805f9babcd"; }
+
     final static private String[] setPROPERTY() {
         String[] PROPERTY = new String[512];
         PROPERTY[BluetoothGattCharacteristic.PROPERTY_WRITE] = "WRITE";
@@ -32,19 +32,19 @@ public class GattData {
         return PERMISSION;
     }
 
-    final static String UAV = custom_uuid("0010"); // service
-    final static String AutopilotCmd  = custom_uuid("0011"); // characteristic
+    public final static String CHARACTERISTIC = sort_uuid("ffe1");
+    public final static String SERVICE = sort_uuid("ffe0");
 
-    final static String defaultC1 = sort_uuid("2a05");
-    final static String defaultC2 = sort_uuid("2a00");
-    final static String defaultC3 = sort_uuid("2a01"); // Device Name
-    final static String defaultC4 = sort_uuid("2aa6");
+    public final static String defaultC1 = sort_uuid("2a05");
+    public final static String defaultC2 = sort_uuid("2a00");
+    public final static String defaultC3 = sort_uuid("2a01"); // Device Name
+    public final static String defaultC4 = sort_uuid("2aa6");
 
-    final static String defaultS1 = sort_uuid("1800");
-    final static String defaultS2 = sort_uuid("1801");
+    public final static String defaultS1 = sort_uuid("1800");
+    public final static String defaultS2 = sort_uuid("1801");
 
-    static String PROPERTY[] = setPROPERTY();
-    static String PERMISSION[] = setPERMISSION();
+    public static String PROPERTY[] = setPROPERTY();
+    public static String PERMISSION[] = setPERMISSION();
 
     private HashMap<String, BluetoothGattService> Services;
     private HashMap<String, BluetoothGattCharacteristic> Characteristics;
@@ -59,8 +59,8 @@ public class GattData {
         Services = new HashMap<>();
         UuidName = new HashMap<>();
 
-        UuidName.put(UAV, "UAV");
-        UuidName.put(AutopilotCmd, "AutopilotCmd");
+        UuidName.put(CHARACTERISTIC, "Characteristic");
+        UuidName.put(SERVICE, "Service");
 
         // default Characteristics
         UuidName.put(defaultC1, "Service Changed");
@@ -111,8 +111,9 @@ public class GattData {
 
         for (BluetoothGattService service : bluetoothGatt.getServices()) {
             addService(service);
-            for (BluetoothGattCharacteristic characteristic : service.getCharacteristics())
+            for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
                 addCharacteristic(characteristic);
+            }
         }
     }
 

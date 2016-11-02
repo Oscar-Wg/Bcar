@@ -1,18 +1,16 @@
 package fypnctucs.bcar.device;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Parcel;
-import android.util.Log;
 
 import java.io.ObjectInput;
 import java.util.ArrayList;
 
 import fypnctucs.bcar.MyDBHelper;
-import fypnctucs.bcar.fragment.list_fragment;
 
 /**
  * Created by kamfu.wong on 3/10/2016.
@@ -26,25 +24,27 @@ public class BleDeviceDAO {
     public static final String NAME_COLUMN = "NAME";
     public static final String TYPE_COLUMN = "TYPE";
     public static final String DEVICE_COLUMN = "DEVICE";
+    public static final String NOTIFIED_COLUMN = "NOTIFIED";
+    public static final String AUTOCONNECT_COLUMN = "AUTOCONNECT";
+    public static final String AUTORECORD_COLUMN = "AUTORECORD";
+    public static final String LASTLNG_COLUMN = "LASTLNG";
+    public static final String LASTLAT_COLUMN = "LASTLAT";
 
-    public static final String CREATE_TABLE =
-            "CREATE TABLE " + TABLE_NAME + " (" +
+    public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
                     KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     NAME_COLUMN + " TEXT, " +
                     TYPE_COLUMN + " INT, " +
-                    DEVICE_COLUMN + " TEXT)";
+                    DEVICE_COLUMN + " TEXT, " +
+                    NOTIFIED_COLUMN + " INT, " +
+                    AUTOCONNECT_COLUMN + " INT, " +
+                    AUTORECORD_COLUMN + " INT, " +
+                    LASTLNG_COLUMN + " REAL, " +
+                    LASTLAT_COLUMN + " REAL)";
 
     private SQLiteDatabase db;
 
-    private DeviceListAdapter devicesAdapter;
-    private Activity activity;
-    private list_fragment fragment;
-
-    public BleDeviceDAO(list_fragment fragment, DeviceListAdapter devicesAdapter) {
-        this.devicesAdapter = devicesAdapter;
-        this.fragment = fragment;
-        this.activity = fragment.getActivity();
-        this.db = MyDBHelper.getDatabase(activity.getApplicationContext());
+    public BleDeviceDAO(Context context) {
+        this.db = MyDBHelper.getDatabase(context);
     }
 
     public long insert(BleDevice device) {
@@ -57,6 +57,11 @@ public class BleDeviceDAO {
         cv.put(NAME_COLUMN, device.getName());
         cv.put(TYPE_COLUMN, device.getType());
         cv.put(DEVICE_COLUMN, dev);
+        cv.put(NOTIFIED_COLUMN, device.isNotified());
+        cv.put(AUTOCONNECT_COLUMN, device.isAutoConnect());
+        cv.put(AUTORECORD_COLUMN, device.isAutoRecord());
+        cv.put(LASTLNG_COLUMN, device.getLast_lng());
+        cv.put(LASTLAT_COLUMN, device.getLast_lat());
 
         long id = db.insert(TABLE_NAME, null, cv);
 
@@ -73,6 +78,11 @@ public class BleDeviceDAO {
         cv.put(NAME_COLUMN, device.getName());
         cv.put(TYPE_COLUMN, device.getType());
         cv.put(DEVICE_COLUMN, dev);
+        cv.put(NOTIFIED_COLUMN, device.isNotified());
+        cv.put(AUTOCONNECT_COLUMN, device.isAutoConnect());
+        cv.put(AUTORECORD_COLUMN, device.isAutoRecord());
+        cv.put(LASTLNG_COLUMN, device.getLast_lng());
+        cv.put(LASTLAT_COLUMN, device.getLast_lat());
 
         String where = KEY_ID + "=" + device.getId();
 
@@ -118,6 +128,11 @@ public class BleDeviceDAO {
         String name = cursor.getString(1);
         int type = cursor.getInt(2);
         byte[] arr = cursor.getBlob(3);
+        boolean notified = cursor.getShort(4) != 0 ? true : false;
+        boolean autoConnect = cursor.getShort(5) != 0 ? true : false;
+        boolean autoRecord = cursor.getShort(6) != 0 ? true : false;
+        double last_lng = cursor.getFloat(7);
+        double last_lat = cursor.getFloat(8);
 
         Parcel p = Parcel.obtain();
         p.unmarshall(arr, 0, arr.length);
@@ -125,7 +140,7 @@ public class BleDeviceDAO {
 
         BluetoothDevice dev = BluetoothDevice.CREATOR.createFromParcel(p);
 
-        BleDevice device = new BleDevice(activity, fragment, devicesAdapter, name, type, dev, false);
+        BleDevice device = new BleDevice(name, type, dev, false, notified, autoConnect, autoRecord, last_lng, last_lat);
         device.setId(id);
 
         return device;

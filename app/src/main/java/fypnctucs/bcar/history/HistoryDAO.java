@@ -1,7 +1,7 @@
 package fypnctucs.bcar.history;
 
-import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -23,6 +23,7 @@ public class HistoryDAO {
     public static final String DATE_COLUMN = "DATE";
     public static final String LNG_COLUMN = "LNG";
     public static final String LAT_COLUMN = "LAT";
+    public static final String ADDRESS_COLUMN = "ADDRESS";
 
     public static final String CREATE_TABLE =
             "CREATE TABLE " + TABLE_NAME + " (" +
@@ -30,15 +31,13 @@ public class HistoryDAO {
                     BTADDRESS_COLUMN + " TEXT, " +
                     DATE_COLUMN + " TEXT, " +
                     LAT_COLUMN + " REAL, " +
-                    LNG_COLUMN + " REAL)";
+                    LNG_COLUMN + " REAL, " +
+                    ADDRESS_COLUMN + " TEXT)";
 
     private SQLiteDatabase db;
 
-    private Activity activity;
-
-    public HistoryDAO(Activity activity) {
-        this.activity = activity;
-        this.db = MyDBHelper.getDatabase(this.activity.getApplicationContext());
+    public HistoryDAO(Context context) {
+        this.db = MyDBHelper.getDatabase(context);
     }
 
     public long insert(History history) {
@@ -48,6 +47,7 @@ public class HistoryDAO {
         cv.put(DATE_COLUMN, history.getDate());
         cv.put(LAT_COLUMN, history.getLat());
         cv.put(LNG_COLUMN, history.getLng());
+        cv.put(ADDRESS_COLUMN, history.getAddress());
 
         long id = db.insert(TABLE_NAME, null, cv);
 
@@ -61,6 +61,7 @@ public class HistoryDAO {
         cv.put(DATE_COLUMN, history.getDate());
         cv.put(LAT_COLUMN, history.getLat());
         cv.put(LNG_COLUMN, history.getLng());
+        cv.put(ADDRESS_COLUMN, history.getAddress());
 
         long id = db.insert(TABLE_NAME, null, cv);
 
@@ -74,6 +75,7 @@ public class HistoryDAO {
         cv.put(DATE_COLUMN, history.getDate());
         cv.put(LAT_COLUMN, history.getLat());
         cv.put(LNG_COLUMN, history.getLng());
+        cv.put(ADDRESS_COLUMN, history.getAddress());
 
         String where = KEY_ID + "=" + history.getId();
 
@@ -99,7 +101,9 @@ public class HistoryDAO {
     public List<History> getByBtaddress(String btaddress) {
         List<History> result = new ArrayList<>();
         String where = BTADDRESS_COLUMN + "=" + btaddress;
-        Cursor cursor = db.query(TABLE_NAME, null, where, null, null, null, null, null);
+        String orderBy = KEY_ID + " DESC";
+
+        Cursor cursor = db.query(TABLE_NAME, null, where, null, null, null, orderBy, null);
 
         while (cursor.moveToNext())
             result.add(getRecord(cursor));
@@ -129,8 +133,9 @@ public class HistoryDAO {
         String date = cursor.getString(2);
         double lat = cursor.getDouble(3);
         double lng = cursor.getDouble(4);
+        String address = cursor.getString(5);
 
-        History history = new History(btaddress, date, lat, lng);
+        History history = new History(btaddress, date, lat, lng, address);
         history.setId(id);
 
         return history;

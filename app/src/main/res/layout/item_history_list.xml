@@ -19,7 +19,7 @@
             android:layout_height="35dp"
             android:gravity="fill_vertical"
             android:layout_marginLeft="10dp"
-            android:text="..."
+            android:text="載入中..."
             android:textColor="@android:color/black"
             android:textSize="17dp" />
 
@@ -37,7 +37,7 @@
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
                 android:layout_marginLeft="10dp"
-                android:text="2016-09-30 11:17"
+                android:text="yyyy-mm-dd hh:mm:ss"
                 android:textSize="14dp" />
 
             <TextView

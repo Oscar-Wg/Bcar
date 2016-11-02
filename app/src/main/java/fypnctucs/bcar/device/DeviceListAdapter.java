@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import fypnctucs.bcar.R;
 import fypnctucs.bcar.DataFormat;
+import fypnctucs.bcar.ble.GattData;
 
 /**
  * Created by kamfu.wong on 29/9/2016.
@@ -52,11 +53,21 @@ public class DeviceListAdapter extends BaseAdapter {
         }
 
         ViewHolder holder = (DeviceListAdapter.ViewHolder) convertView.getTag();
-        BleDevice item = getItem(position);
+        final BleDevice item = getItem(position);
         holder.name.setText(item.getName());
-        if (item.isConnected())
+
+        holder.icon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (item.isConnected()) {
+                    item.data.writeCharacteristic(GattData.CHARACTERISTIC, "1".getBytes());
+                }
+            }
+        });
+
+        if (item.isConnected()) {
             holder.icon.setImageResource(DataFormat.CONNECT_DEVICE_ICON[item.getType()]);
-        else
+        } else
             holder.icon.setImageResource(DataFormat.DISCONNECT_DEVICE_ICON[item.getType()]);
         return convertView;
     }

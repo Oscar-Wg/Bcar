@@ -25,6 +25,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -112,9 +113,9 @@ public class list_fragment extends Fragment {
         devicesAdapter = new DeviceListAdapter();
         devicesAdapter.setActivity(getActivity());
 
-        historyDAO = new HistoryDAO(getActivity());
+        historyDAO = new HistoryDAO(getActivity().getApplicationContext());
 
-        bleDeviceDAO = new BleDeviceDAO(this, devicesAdapter);
+        bleDeviceDAO = new BleDeviceDAO(getActivity().getApplicationContext());
         devicesList = bleDeviceDAO.getAll();
         devicesAdapter.setList(devicesList);
 
@@ -127,10 +128,21 @@ public class list_fragment extends Fragment {
         devicesListView.setOnMenuItemClickListener(devicesListView_OnMenuItemClickListener);
     }
 
-    // history insert
+    // history insert and update
     public void History_insert(History history) {
         historyDAO.insert(history);
+        if (historyList != null)
+            historyList.add(0, history);
         refreshHoistoryAdapter();
+    }
+    public void History_update(History history) {
+        historyDAO.update(history);
+        refreshHoistoryAdapter();
+    }
+    // bleDevice insert and update
+    public void BleDevice_update(BleDevice bleDevice) {
+        bleDeviceDAO.update(bleDevice);
+        refreshDevicesAdapter();
     }
 
     // history dialog
@@ -165,9 +177,9 @@ public class list_fragment extends Fragment {
             devicePosition = position;
 
             historyList = historyDAO.getByBtaddress("'"+devicesList.get(position).getDevice().getAddress()+"'");
+
             historyListAdapter.setList(historyList);
 
-            refreshHoistoryAdapter();
             HistoryDialog.show();
         }
     };
@@ -181,7 +193,7 @@ public class list_fragment extends Fragment {
                 .setView(MapDialogView).create();
         MapDialog.getWindow().getAttributes().windowAnimations = android.R.style.Animation_Translucent;
 
-        map = new Map_Controller(getActivity(), (MapView)MapDialogView.findViewById(R.id.history_map));
+        map = null;
 
         FloatingActionButton fab = (FloatingActionButton) MapDialogView.findViewById(R.id.mylocation);
         fab.setOnClickListener(new OnClickListener() {
@@ -195,6 +207,7 @@ public class list_fragment extends Fragment {
             @Override
             public void onClick(View v) {
                 MapDialog.cancel();
+
             }
         });
     }
@@ -202,7 +215,11 @@ public class list_fragment extends Fragment {
     private final AdapterView.OnItemClickListener historyOnClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            map.clearMarkers();
+
+            if (map == null)
+                map = new Map_Controller(getActivity(), (MapView)MapDialogView.findViewById(R.id.history_map));
+            //else
+            //    map.clearMarkers();
 
             map.InsertMarker(new LatLng(historyList.get(position).getLat(), historyList.get(position).getLng()),
                     devicesList.get(devicePosition).getName() + " 停在這裡",
@@ -267,16 +284,16 @@ public class list_fragment extends Fragment {
 
                 BleDevice newDevice = getDeviceByBTD(dev);
                 if (newDevice == null) {
-                    newDevice = new BleDevice(getActivity(), list_fragment.this, devicesAdapter, dev.getName(), DataFormat.OTHER, dev, false);
+                    newDevice = new BleDevice(dev.getName(), DataFormat.OTHER, dev, false, true, false, true, -1111, -1111);
 
-                    newDevice.connect((MainActivity)getActivity());
+                    newDevice.connect(list_fragment.this);
                     devicesList.add(newDevice);
                     bleDeviceDAO.insert(newDevice);
 
                     refreshDevicesAdapter();
                 } else {
                     if (!newDevice.isConnecting() && !newDevice.isConnected()) {
-                        newDevice.connect((MainActivity)getActivity());
+                        newDevice.connect(list_fragment.this);
                     }
                 }
 
@@ -314,6 +331,10 @@ public class list_fragment extends Fragment {
                     ((EditText)SettingDialogView.findViewById(R.id.deviceName)).setText(device.getName());
                     ((Spinner)SettingDialogView.findViewById(R.id.deviceType)).setSelection(device.getType());
                     ((TextView)SettingDialogView.findViewById(R.id.bluetoothAddress)).setText(device.getDevice().getAddress());
+                    ((Switch)SettingDialogView.findViewById(R.id.notification_switch)).setChecked(device.isNotified());
+                    ((Switch)SettingDialogView.findViewById(R.id.autoConnect_switch)).setChecked(device.isAutoConnect());
+                    ((Switch)SettingDialogView.findViewById(R.id.autoRecord_switch)).setChecked(device.isAutoRecord());
+
                     if (device.isConnected()) {
                         ((TextView)SettingDialogView.findViewById(R.id.connectStatus)).setText("已連線");
                         buttonStr = "中斷連線";
@@ -332,6 +353,9 @@ public class list_fragment extends Fragment {
                                 public void onClick(DialogInterface dialog, int which) {
                                     device.setName(((TextView)SettingDialogView.findViewById(R.id.deviceName)).getText()+"");
                                     device.setType(((Spinner)SettingDialogView.findViewById(R.id.deviceType)).getSelectedItemPosition());
+                                    device.setNotified(((Switch)SettingDialogView.findViewById(R.id.notification_switch)).isChecked());
+                                    device.setAutoConnect(((Switch)SettingDialogView.findViewById(R.id.autoConnect_switch)).isChecked());
+                                    device.setAutoRecord(((Switch)SettingDialogView.findViewById(R.id.autoRecord_switch)).isChecked());
 
                                     bleDeviceDAO.update(device);
 
@@ -349,7 +373,7 @@ public class list_fragment extends Fragment {
                                     if (device.isConnected())
                                         device.disconnect();
                                     else
-                                        device.connect((MainActivity)list_fragment.this.getActivity());
+                                        device.connect(list_fragment.this);
                                 }
                             }).show();
 
@@ -357,7 +381,7 @@ public class list_fragment extends Fragment {
                 case 1:
                     // delete
                     new AlertDialog.Builder(list_fragment.this.getActivity())
-                            .setTitle("確認刪除?")
+                            .setTitle("確認刪除? (裝置的所以設定將會被移除)")
                             .setPositiveButton("是", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -413,6 +437,7 @@ public class list_fragment extends Fragment {
 
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
+            Log.d("DEBUG", "called onScanResult");
             final BluetoothDevice device = result.getDevice();
             if (!foundDevicesArray.contains(device)) {
                 foundDevicesArray.add(device);
@@ -464,6 +489,7 @@ public class list_fragment extends Fragment {
                     break;
                 case REFRESH_HISTORY_ADAPTER:
                     historyListAdapter.notifyDataSetChanged();
+                    Log.d("DEBUG", "data change");
                     break;
                 case BLEDEVICE_REFRESH_LOCATION:
                     ((MainActivity)getActivity()).getCurrentLocation(0, 0, (LocationListener) msg.obj);

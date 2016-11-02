@@ -2,15 +2,23 @@ package fypnctucs.bcar;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.location.Geocoder;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.NavigationView.OnNavigationItemSelectedListener;
@@ -21,11 +29,17 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+
+import java.io.IOException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import fypnctucs.bcar.ble.BLEClient;
 import fypnctucs.bcar.fragment.about_fragment;
@@ -35,6 +49,8 @@ import fypnctucs.bcar.fragment.more_fragment;
 import fypnctucs.bcar.fragment.notification_fragment;
 import fypnctucs.bcar.fragment.setting_fragment;
 import fypnctucs.bcar.fragment.warming_fragment;
+import fypnctucs.bcar.history.History;
+import fypnctucs.bcar.Service_ble_connection.ServiceBinder;
 
 public class MainActivity extends AppCompatActivity implements OnNavigationItemSelectedListener {
 
@@ -46,6 +62,15 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     private int fragmentPos;
     private boolean warming;
 
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service: manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +81,16 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             permissionRequest();
         }
+
+        Log.d("start?", Service_ble_connection.is_start+"");
+
+        //if (!isServiceRunning(Service_ble_connection.class))
+         //   startService(new Intent(this, Service_ble_connection.class));
+        Intent intent = new Intent(this, Service_ble_connection.class);
+        startService(intent);
+        bindService(intent, bleServiceConnection, Service.BIND_AUTO_CREATE);
+
+        geocoder = new Geocoder(this);
 
         // location init
         LocationServiceInit();
@@ -90,12 +125,14 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
     @Override
     protected void onResume() {
+
         if (warming && mBLEClient.isEnabled()) {
             warming = false;
             selectItem(fragmentPos);
         }
         if (!mBLEClient.isEnabled() && fragmentPos != 4 && fragmentPos != 5)
             checkBluetooth();
+
         super.onResume();
     }
 
@@ -106,6 +143,37 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             drawer.closeDrawer(GravityCompat.START);
         } else {
             //super.onBackPressed();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (isBound) {
+            unbindService(bleServiceConnection);
+            isBound = false;
+        }
+    }
+
+    //  Ble Service Connection Listener
+    private BleServiceConnection bleServiceConnection = new BleServiceConnection();
+    private Service_ble_connection service_ble_connection;
+    private boolean isBound;
+    private class BleServiceConnection implements ServiceConnection {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            service_ble_connection = ((ServiceBinder)service).getService();
+            isBound = true;
+            //service_ble_connection.setActivity(MainActivity.this);
+            Log.d("onServiceConnected", "Connected");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            service_ble_connection = null;
+            isBound = false;
+            Log.d("onServiceDisconnected", "Disconnected");
         }
     }
 
@@ -272,15 +340,53 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         }
     }
 
+    protected Geocoder geocoder;
+
     // msg handler
+    private class LocationTextView {
+        protected TextView view;
+        protected String address;
+        LocationTextView(String address, TextView view) {
+            this.address = address;
+            this.view = view;
+        }
+    }
     public void status(String msg) {
         mHandler.obtainMessage(TOAST_STATUS, msg).sendToTarget();
     }
+    public void findAddress(final History item) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String address = "";
+                rwl.lock();
+                try {
+                    address = geocoder.getFromLocation(item.getLat(), item.getLng(), 1).get(0).getAddressLine(0);
+                } catch (IOException e) {
+                    address = "無法使用網絡";
+                    e.printStackTrace();
+                } finally {
+                    item.setAddress(address);
+                    ((list_fragment)list_fragment).History_update(item);
+                }
+                rwl.unlock();
+                item.busy = false;
+            }
+        }).start();
+
+    }
     protected final static int TOAST_STATUS = 103;
+    protected final static int SET_TEXT = 99;
+    static Lock rwl = new ReentrantLock();
+
     public final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
+                case SET_TEXT:
+                    ((LocationTextView)msg.obj).view.setText(((LocationTextView)msg.obj).address);
+                    break;
                 case TOAST_STATUS:
                     Toast.makeText(MainActivity.this, (String)msg.obj, Toast.LENGTH_SHORT).show();
                     break;

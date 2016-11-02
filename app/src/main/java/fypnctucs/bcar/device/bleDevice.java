@@ -24,7 +24,6 @@ import fypnctucs.bcar.history.History;
 
 public class BleDevice {
 
-    private DeviceListAdapter devicesAdapter;
     private Activity activity;
     private list_fragment fragment;
 
@@ -32,6 +31,10 @@ public class BleDevice {
     private String  name;
     private int type;
     private BluetoothDevice device;
+    private boolean notified;
+    private boolean autoConnect;
+    private boolean autoRecord;
+    private double last_lng, last_lat;
 
     private BluetoothGatt bluetoothGatt;
     protected GattData data;
@@ -40,17 +43,19 @@ public class BleDevice {
     private boolean connecting;
 
     public BleDevice() {
-        this(null, null, null, "unknow", 0, null, false);
+        this("unknow", 0, null, false, true, false, true, -1111, -1111);
     }
 
-    public BleDevice(Activity activity, list_fragment fragment, DeviceListAdapter devicesAdapter, String name, int type, BluetoothDevice device, boolean connected) {
-        this.activity = activity;
-        this.fragment = fragment;
-        this.devicesAdapter = devicesAdapter;
+    public BleDevice(String name, int type, BluetoothDevice device, boolean connected, boolean notified, boolean autoConnect, boolean autoRecord, double last_lng, double last_lat) {
         this.name = name;
         this.type = type;
         this.device = device;
         this.connected = connected;
+        this.notified = notified;
+        this.autoConnect = autoConnect;
+        this.autoRecord = autoRecord;
+        this.last_lat = last_lat;
+        this.last_lng = last_lng;
         connecting = false;
     }
 
@@ -74,12 +79,52 @@ public class BleDevice {
         return type;
     }
 
+    public double getLast_lng() {
+        return  last_lng;
+    }
+
+    public double getLast_lat() {
+        return  last_lat;
+    }
+
     public boolean isConnected() {
         return connected;
     }
 
     public boolean isConnecting() {
         return connecting;
+    }
+
+    public boolean isAutoRecord() {
+        return autoRecord;
+    }
+
+    public boolean isAutoConnect() {
+        return autoConnect;
+    }
+
+    public boolean isNotified() {
+        return notified;
+    }
+
+    public void setLast_lng(double last_lng) {
+        this.last_lng = last_lng;
+    }
+
+    public void setLast_lat(double last_lat) {
+        this.last_lat = last_lat;
+    }
+
+    public void setNotified(boolean notified) {
+        this.notified = notified;
+    }
+
+    public void setAutoRecord(boolean autoRecord) {
+        this.autoRecord = autoRecord;
+    }
+
+    public void setAutoConnect(boolean autoConnect) {
+        this.autoConnect = autoConnect;
     }
 
     public void setName(String name) {
@@ -90,7 +135,15 @@ public class BleDevice {
         this.type = type;
     }
 
-    public void connect(MainActivity activity) {
+    public void setConnected(boolean status) {
+        connected = status;
+        if (!connected)
+            bluetoothGatt = null;
+    }
+
+    public void connect(list_fragment fragment) {
+        this.fragment = fragment;
+        this.activity = fragment.getActivity();
         bluetoothGatt = device.connectGatt(activity, false, gattCallback);
         connecting = true;
     }
@@ -102,12 +155,6 @@ public class BleDevice {
 
     public void initData() {
         data = new GattData(bluetoothGatt);
-    }
-
-    public void setConnected(boolean status) {
-        connected = status;
-        if (!connected)
-            bluetoothGatt = null;
     }
 
     // BLE gatt client callback
@@ -142,8 +189,8 @@ public class BleDevice {
             /*
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 ((MainActivity)activity).status("onCharacteristicRead");
-            } else ((MainActivity)activity).status("onCharacteristicRead fail");
-*/
+                    } else ((MainActivity)activity).status("onCharacteristicRead fail");
+                    */
             data.replaceCharacteristic(characteristic);
 
             super.onCharacteristicRead(gatt, characteristic, status);
@@ -202,7 +249,10 @@ public class BleDevice {
                 Calendar calendar = Calendar.getInstance();
                 int[] date = new int[]{calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND)};
                 Log.d("LocationListener", "History_insert");
-                fragment.History_insert(new History(device.getAddress(), timeString(date), location.getLatitude(), location.getLongitude()));
+                fragment.History_insert(new History(device.getAddress(), timeString(date), location.getLatitude(), location.getLongitude(), "..."));
+                setLast_lat(location.getLatitude());
+                setLast_lng(location.getLongitude());
+                fragment.BleDevice_update(BleDevice.this);
                 ((MainActivity)activity).StopLocationListener(this);
             } else {
                 Log.d("onLocationChanged", "Location is null");

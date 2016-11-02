@@ -21,6 +21,7 @@
         android:layout_height="wrap_content">
 
         <TextView
+            android:textColor="#333"
             android:text="車牌號碼"
             android:layout_width="80dp"
             android:layout_height="wrap_content"
@@ -46,6 +47,7 @@
         android:layout_height="wrap_content">
 
         <TextView
+            android:textColor="#333"
             android:text="類型"
             android:layout_width="80dp"
             android:layout_height="wrap_content"
@@ -56,6 +58,55 @@
             android:layout_height="wrap_content"
             android:id="@+id/deviceType"
             android:entries="@array/car_type_list"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:paddingTop="20dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Switch
+            android:textColor="#333"
+            android:text="通知"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/notification_switch"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:paddingTop="20dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Switch
+            android:textColor="#333"
+            android:text="自動連線"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/autoConnect_switch"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:paddingTop="20dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Switch
+            android:textColor="#333"
+            android:text="自動紀錄位置"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/autoRecord_switch"
             android:layout_weight="1" />
 
     </LinearLayout>

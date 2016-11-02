@@ -1,15 +1,15 @@
 package fypnctucs.bcar.history;
 
 import android.app.Activity;
-import android.location.Geocoder;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.util.List;
 
+import fypnctucs.bcar.MainActivity;
 import fypnctucs.bcar.R;
 
 /**
@@ -19,7 +19,6 @@ import fypnctucs.bcar.R;
 public class HistoryListAdapter extends BaseAdapter {
     private Activity activity;
     private List<History> historyList;
-
 
     public void setActivity(Activity activity) {
         this.activity = activity;
@@ -53,15 +52,11 @@ public class HistoryListAdapter extends BaseAdapter {
         HistoryListAdapter.ViewHolder holder = (HistoryListAdapter.ViewHolder) convertView.getTag();
         History item = getItem(position);
 
-        String address = "";
-        Geocoder geocoder = new Geocoder(activity);
-        try {
-            address = geocoder.getFromLocation(item.getLat(),item.getLng(), 1).get(0).getAddressLine(0);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (item.getAddress().equals("...") && !item.busy) {
+            item.busy = true;
+            ((MainActivity)activity).findAddress(item);
         }
-
-        holder.address.setText(address);
+        holder.address.setText(item.getAddress());
         holder.date.setText(item.getDate());
         holder.latlng.setText("經度: " + item.getLat() + "\n緯度: " + item.getLng());
 

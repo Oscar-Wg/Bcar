@@ -26,6 +26,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -36,7 +37,7 @@ import fypnctucs.bcar.R;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class map_fragment extends Fragment implements LocationListener, ConnectionCallbacks, OnConnectionFailedListener {
+public class map_fragment extends Fragment implements LocationListener, ConnectionCallbacks, OnConnectionFailedListener, OnMapReadyCallback {
 
     public map_fragment() {
         // Required empty public constructor
@@ -183,4 +184,8 @@ public class map_fragment extends Fragment implements LocationListener, Connecti
             Toast.makeText(getActivity(), "Google Services連線失敗. Code:"+errorCode, Toast.LENGTH_LONG).show();
     }
 
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+
+    }
 }

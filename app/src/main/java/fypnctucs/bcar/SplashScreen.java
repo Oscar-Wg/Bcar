@@ -17,18 +17,20 @@ public class SplashScreen extends Activity {
         setContentView(R.layout.splash);
 
         Thread timerThread = new Thread(){
-            public void run(){
+            public void run() {
+                final Intent intent = new Intent(SplashScreen.this,MainActivity.class);
                 try{
                     sleep(4000);
                 }catch(InterruptedException e){
                     e.printStackTrace();
-                }finally{
-                    Intent intent = new Intent(SplashScreen.this,MainActivity.class);
+                }finally {
                     startActivity(intent);
                 }
             }
         };
+
         timerThread.start();
+
     }
 
     @Override
