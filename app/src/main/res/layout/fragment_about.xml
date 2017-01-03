@@ -2,7 +2,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:weightSum="2"
     android:orientation="vertical"
-    android:background="@color/colorAccent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="?attr/actionBarSize"
@@ -16,6 +15,7 @@
         android:layout_height="0dp"/>
 
     <LinearLayout
+        android:weightSum="1"
         android:layout_weight="1"
         android:gravity="center_horizontal"
         android:orientation="horizontal"
@@ -23,14 +23,15 @@
         android:layout_height="0dp">
 
         <ImageView
+            android:layout_weight="0.5"
             android:src="@drawable/ic_launcher"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent" />
 
     </LinearLayout>
 
     <TextView
-        android:textColor="#FFF"
+        android:textColor="#333"
         android:layout_weight="0.1"
         android:text="© 2016 fypnctucs team. All rights reserved."
         android:textSize="12dp"
@@ -40,7 +41,7 @@
         android:layout_height="0dp"/>
 
     <TextView
-        android:textColor="#FFF"
+        android:textColor="#333"
         android:layout_weight="0.1"
         android:text="國立交通大學 資訊工程系 - 專題"
         android:textSize="15dp"
@@ -50,7 +51,7 @@
         android:layout_height="0dp"/>
 
     <TextView
-        android:textColor="#FFF"
+        android:textColor="#333"
         android:layout_weight="0.2"
         android:text="指導教授\n 陳耀宗"
         android:textSize="15dp"
@@ -60,7 +61,7 @@
         android:layout_height="0dp"/>
 
     <TextView
-        android:textColor="#FFF"
+        android:textColor="#333"
         android:layout_weight="0.4"
         android:text="學生\n0216094 黃錦富\n0216243 楊凱均\n0216100 莊道全"
         android:textSize="15dp"

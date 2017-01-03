@@ -13,10 +13,14 @@ import android.util.Log;
 
 import java.util.Calendar;
 
+import javax.crypto.Mac;
+
 import fypnctucs.bcar.MainActivity;
 import fypnctucs.bcar.ble.GattData;
 import fypnctucs.bcar.fragment.list_fragment;
 import fypnctucs.bcar.history.History;
+
+import static android.bluetooth.BluetoothGatt.GATT_SUCCESS;
 
 /**
  * Created by kamfu.wong on 29/9/2016.
@@ -36,11 +40,18 @@ public class BleDevice {
     private boolean autoRecord;
     private double last_lng, last_lat;
 
+    public int findStatus = 1;
+    final static int DISCONNECT = 1;
+    final static int TRYING = 2;
+    final static int CONNECTED = 3;
+
     private BluetoothGatt bluetoothGatt;
     protected GattData data;
 
     private boolean connected;
     private boolean connecting;
+
+    public int RSSI = 0;
 
     public BleDevice() {
         this("unknow", 0, null, false, true, false, true, -1111, -1111);
@@ -141,9 +152,9 @@ public class BleDevice {
             bluetoothGatt = null;
     }
 
-    public void connect(list_fragment fragment) {
-        this.fragment = fragment;
-        this.activity = fragment.getActivity();
+    public void connect(Activity activity) {
+        this.fragment = ((MainActivity)activity).getListFragment();
+        this.activity = activity;
         bluetoothGatt = device.connectGatt(activity, false, gattCallback);
         connecting = true;
     }
@@ -155,6 +166,9 @@ public class BleDevice {
 
     public void initData() {
         data = new GattData(bluetoothGatt);
+        setConnected(true);
+        if (fragment != null)
+            fragment.refreshDevicesAdapter();
     }
 
     // BLE gatt client callback
@@ -163,23 +177,32 @@ public class BleDevice {
         public void onConnectionStateChange(final BluetoothGatt gatt, int status, int newState) {
             connecting = false;
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                setConnected(true);
-                ((MainActivity)activity).status(getName() + " 已連線");
-                fragment.getLocation(DeviceOneTimeLocationListener);
-                //gatt.requestMtu(64);
+                ((MainActivity)activity).status(getName() + " - 連接");
+                ((MainActivity)activity).getLocation(Connect_DeviceOneTimeLocationListener);
                 gatt.discoverServices();
+                findStatus = CONNECTED;
             }
-            if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+            if (newState == BluetoothProfile.STATE_DISCONNECTED && connected == false) {
+                ((MainActivity)activity).status(getName() + " - 找不到裝置 ");
+                findStatus = DISCONNECT;
+                RSSI = 0;
+                if (fragment != null)
+                    fragment.refreshDevicesAdapter();
+            }
+            if (newState == BluetoothProfile.STATE_DISCONNECTED && connected == true) {
                 setConnected(false);
-                ((MainActivity)activity).status(getName() + " 連線中斷");
-                fragment.getLocation(DeviceOneTimeLocationListener);
+                ((MainActivity)activity).status(getName() + " - 斷開 ");
+                ((MainActivity)activity).getLocation(Disconnect_DeviceOneTimeLocationListener);
+                findStatus = DISCONNECT;
+                RSSI = 0;
+                if (fragment != null)
+                    fragment.refreshDevicesAdapter();
             }
-            fragment.refreshDevicesAdapter();
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if (status == BluetoothGatt.GATT_SUCCESS)
+            if (status == GATT_SUCCESS)
                 initData();
             super.onServicesDiscovered(gatt, status);
         }
@@ -218,16 +241,25 @@ public class BleDevice {
 
         @Override
         public void onMtuChanged (BluetoothGatt gatt, int mtu, int status) {
-            /*
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                ((MainActivity)activity).status("onMtuChanged: " + mtu);
-            } else ((MainActivity)activity).status("onMtuChanged fail");
-*/
             super.onMtuChanged(gatt, mtu, status);
         }
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (rssi>=-50) {
+                    RSSI = 1;
+                }
+                if (rssi<-50 && rssi >=-65) {
+                    RSSI = 2;
+                }
+                if (rssi<-65 && rssi >=-75) {
+                    RSSI = 3;
+                }
+                if (rssi<-75) {
+                    RSSI = 4;
+                }
+            } else Log.d("onReadRemoteRssi", "fail");
             super.onReadRemoteRssi(gatt, rssi, status);
         }
     };
@@ -242,14 +274,44 @@ public class BleDevice {
         return time;
     }
 
-    private LocationListener DeviceOneTimeLocationListener = new LocationListener() {
+    private LocationListener Connect_DeviceOneTimeLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
             if (location != null) {
                 Calendar calendar = Calendar.getInstance();
                 int[] date = new int[]{calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND)};
                 Log.d("LocationListener", "History_insert");
-                fragment.History_insert(new History(device.getAddress(), timeString(date), location.getLatitude(), location.getLongitude(), "..."));
+                fragment.History_insert(new History(device.getAddress(), timeString(date), location.getLatitude(), location.getLongitude(), "...", "連接"));
+                setLast_lat(location.getLatitude());
+                setLast_lng(location.getLongitude());
+                fragment.BleDevice_update(BleDevice.this);
+                ((MainActivity)activity).StopLocationListener(this);
+            } else {
+                Log.d("onLocationChanged", "Location is null");
+            }
+        }
+
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle) {
+        }
+
+        @Override
+        public void onProviderEnabled(String s) {
+        }
+
+        @Override
+        public void onProviderDisabled(String s) {
+        }
+    };
+
+    private LocationListener Disconnect_DeviceOneTimeLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            if (location != null) {
+                Calendar calendar = Calendar.getInstance();
+                int[] date = new int[]{calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND)};
+                Log.d("LocationListener", "History_insert " + fragment);
+                fragment.History_insert(new History(device.getAddress(), timeString(date), location.getLatitude(), location.getLongitude(), "...", "斷開"));
                 setLast_lat(location.getLatitude());
                 setLast_lng(location.getLongitude());
                 fragment.BleDevice_update(BleDevice.this);

@@ -32,8 +32,8 @@ public class GattData {
         return PERMISSION;
     }
 
-    public final static String CHARACTERISTIC = sort_uuid("ffe1");
-    public final static String SERVICE = sort_uuid("ffe0");
+    public final static String CHARACTERISTIC = "19b10001-e8f2-537e-4f6c-d104768a1214";
+    public final static String SERVICE = "19b10000-e8f2-537e-4f6c-d104768a1214";
 
     public final static String defaultC1 = sort_uuid("2a05");
     public final static String defaultC2 = sort_uuid("2a00");

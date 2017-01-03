@@ -7,6 +7,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,12 +33,20 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+
+import fypnctucs.bcar.DataFormat;
+import fypnctucs.bcar.MainActivity;
+import fypnctucs.bcar.Map_Controller;
 import fypnctucs.bcar.R;
+import fypnctucs.bcar.device.BleDevice;
+import fypnctucs.bcar.device.BleDeviceDAO;
+import fypnctucs.bcar.history.HistoryDAO;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class map_fragment extends Fragment implements LocationListener, ConnectionCallbacks, OnConnectionFailedListener, OnMapReadyCallback {
+public class map_fragment extends Fragment{
 
     public map_fragment() {
         // Required empty public constructor
@@ -45,147 +54,70 @@ public class map_fragment extends Fragment implements LocationListener, Connecti
 
     private View layout;
 
-    private GoogleApiClient googleApiClient;
-    private LocationRequest locationRequest;
-
-    private LocationManager lms;
-    private String bestProvider = LocationManager.GPS_PROVIDER;
-
+    private Map_Controller map;
     private MapView mapView;
-    private GoogleMap map;
 
-    private Location currentLocation;
-
-    private Marker currentLoactionMarker;
+    private BleDeviceDAO bleDeviceDAO;
+    private ArrayList<BleDevice> devicesList;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         layout = inflater.inflate(R.layout.fragment_map, container, false);
 
-        configGoogleApiClient();
-        configLocationRequest();
-        locationServiceInitial();
+        if (map==null) {
+            bleDeviceDAO = new BleDeviceDAO(getActivity().getApplicationContext());
+        }
+        devicesList = null;
+        devicesList = bleDeviceDAO.getAll();
 
-        if (!googleApiClient.isConnected())
-            googleApiClient.connect();
+        mapView = (MapView)layout.findViewById(R.id.map);
+        map = null;
+        map = new Map_Controller(getActivity(), mapView);
 
-        MapInti(savedInstanceState);
+        for (int i=0; i<devicesList.size(); i++) {
+            map.InsertMarker(new LatLng(devicesList.get(i).getLast_lat(), devicesList.get(i).getLast_lng()),
+                    devicesList.get(i).getName() + " 停在這裡",
+                    DataFormat.CONNECT_DEVICE_ICON[devicesList.get(i).getType()],
+                    true);
+        }
 
-        ((Button) (layout.findViewById(R.id.Test))).setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.mylocation);
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-                Location location = lms.getLastKnownLocation(bestProvider);
-                if (location != null) {
-                    currentLocation = location;
-                    showLocation(currentLocation);
-                }
+                ((MainActivity)getActivity()).getCurrentLocation(0, 0, MapOneTimeLocationListener);
             }
         });
+
+        ((MainActivity)getActivity()).getCurrentLocation(0, 0, MapOneTimeLocationListener);
 
         // Inflate the layout for this fragment
         return layout;
     }
 
-    private void MapInti(Bundle state) {
-        mapView = (MapView) layout.findViewById(R.id.map);
-        mapView.onCreate(state);
-        mapView.onResume();
-
-        MapsInitializer.initialize(getActivity());
-
-        map = mapView.getMap();
-
-        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-    }
-
-    private void mapFocus(Location location) {
-        if (currentLoactionMarker == null) {
-            MarkerOptions tmp = new MarkerOptions();
-            tmp.title("now");
-            tmp.draggable(false);
-            tmp.position(new LatLng(location.getLatitude(), location.getLongitude()));
-
-            currentLoactionMarker = map.addMarker(tmp);
-
-            map.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
-                    .target(new LatLng(location.getLatitude(), location.getLongitude()))
-                    .zoom(18)
-                    .bearing(90)
-                    .tilt(30)
-                    .build()));
-        } else {
-            currentLoactionMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
-
-            map.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
-                    .target(new LatLng(location.getLatitude(), location.getLongitude()))
-                    .bearing(90)
-                    .tilt(30)
-                    .build()));
+    // LocationListener
+    private android.location.LocationListener MapOneTimeLocationListener = new android.location.LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            if (location != null) {
+                map.showCurrentLocation(location);
+                ((MainActivity)getActivity()).StopLocationListener(this);
+            } else {
+                Log.d("onLocationChanged", "Location is null");
+            }
         }
 
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle) {
+        }
 
+        @Override
+        public void onProviderEnabled(String s) {
+        }
 
-    }
+        @Override
+        public void onProviderDisabled(String s) {
+        }
+    };
 
-    private void locationServiceInitial() {
-        lms = (LocationManager) getActivity().getSystemService(getActivity().LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        bestProvider = lms.getBestProvider(criteria, true);
-    }
-
-    private void showLocation(Location location) {
-        mapFocus(location);
-        Toast.makeText(getActivity(), location.getLatitude() + ", " + location.getLongitude(), Toast.LENGTH_SHORT).show();
-    }
-
-
-    private synchronized void configGoogleApiClient() {
-        googleApiClient = new GoogleApiClient.Builder(getActivity())
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-    }
-
-    private void configLocationRequest() {
-        locationRequest = new LocationRequest();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setNumUpdates(1);
-    }
-
-    // LocationListener implements
-    @Override
-    public void onLocationChanged(Location location) {
-        currentLocation = location;
-        showLocation(location);
-    }
-
-    // Connection Callback
-    @Override
-    public void onConnected(Bundle bundle) {
-        Log.d("DEBUG", "google services Connected");
-        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-    }
-    @Override
-    public void onConnectionSuspended(int i) {
-        Toast.makeText(getActivity(), "Google Services連線中斷. Code:"+i, Toast.LENGTH_LONG).show();
-    }
-
-    // OnConnectionFailedListener
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        int errorCode = connectionResult.getErrorCode();
-        if (errorCode == ConnectionResult.SERVICE_MISSING)
-            Toast.makeText(getActivity(), "裝置沒有Google Services", Toast.LENGTH_LONG).show();
-        else
-            Toast.makeText(getActivity(), "Google Services連線失敗. Code:"+errorCode, Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-
-    }
 }

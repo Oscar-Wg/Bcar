@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 import fypnctucs.bcar.MainActivity;
@@ -59,6 +61,7 @@ public class HistoryListAdapter extends BaseAdapter {
         holder.address.setText(item.getAddress());
         holder.date.setText(item.getDate());
         holder.latlng.setText("經度: " + item.getLat() + "\n緯度: " + item.getLng());
+        holder.status.setText(item.getStatus());
 
         return convertView;
     }
@@ -67,11 +70,13 @@ public class HistoryListAdapter extends BaseAdapter {
         TextView address;
         TextView date;
         TextView latlng;
+        TextView status;
 
         public ViewHolder(View view) {
             address = (TextView) view.findViewById(R.id.address);
             date = (TextView) view.findViewById(R.id.date);
             latlng = (TextView) view.findViewById(R.id.latlng);
+            status = (TextView) view.findViewById(R.id.status);
             view.setTag(this);
         }
     }

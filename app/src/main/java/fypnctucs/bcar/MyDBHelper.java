@@ -33,7 +33,6 @@ public class MyDBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(BleDeviceDAO.CREATE_TABLE);
         db.execSQL(HistoryDAO.CREATE_TABLE);
-        HistoryDAO.insert(db, new History("68:4C:BD:E4:39:0C", "2016-10-04 00:54", 24.789261, 121.001489, "..."));
     }
 
     @Override

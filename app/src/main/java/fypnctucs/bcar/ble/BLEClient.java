@@ -44,8 +44,7 @@ public class BLEClient {
             refreshBLE();
         if (crl != SCAN_STATUS)
             if (crl) {
-
-                activity.status("Start Scan");
+                //activity.status("Start Scan");
 
                 SCAN_STATUS = true;
 
@@ -58,7 +57,7 @@ public class BLEClient {
                 bluetoothLeScanner.startScan(filters, settingsBuilder, scanCallback);
 
             } else {
-                activity.status("Stop Scan");
+                //activity.status("Stop Scan");
 
                 SCAN_STATUS = false;
                 bluetoothLeScanner.stopScan(scanCallback);
