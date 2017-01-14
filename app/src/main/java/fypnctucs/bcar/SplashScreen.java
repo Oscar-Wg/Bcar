@@ -20,7 +20,7 @@ public class SplashScreen extends Activity {
             public void run() {
                 final Intent intent = new Intent(SplashScreen.this,MainActivity.class);
                 try{
-                    sleep(3000);
+                    sleep(4000);
                 }catch(InterruptedException e){
                     e.printStackTrace();
                 }finally {

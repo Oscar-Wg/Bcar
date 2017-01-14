@@ -13,19 +13,11 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/activity_vertical_margin" />
 
-    <Button
-        android:onClick="LocationTest"
-        android:text="Test"
-        android:layout_centerHorizontal="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/space"
-        android:id="@+id/Test" />
-
-    <com.google.android.gms.maps.MapView
-        android:layout_below="@id/Test"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/map" />
+        android:layout_height="wrap_content"
+        android:text="MORE"
+        android:layout_below="@+id/space"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

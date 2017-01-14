@@ -91,8 +91,6 @@ public class list_fragment extends Fragment {
 
     private Map_Controller map;
 
-    private boolean create = true;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         layout =  inflater.inflate(R.layout.fragment_list, container, false);
@@ -105,23 +103,21 @@ public class list_fragment extends Fragment {
 
         ((FloatingActionButton) layout.findViewById(R.id.fab)).setOnClickListener(fab_setOnClickListener);
 
-        create = false;
+        ((MainActivity)getActivity()).mBLEClient.SetScanCallback(scanCallback);
+
         return layout;
     }
 
     // list init
     private void list_init() {
-        if (create) {
-            devicesAdapter = new DeviceListAdapter();
-            devicesAdapter.setActivity(getActivity());
+        devicesAdapter = new DeviceListAdapter();
+        devicesAdapter.setActivity(getActivity());
 
-            historyDAO = new HistoryDAO(getActivity().getApplicationContext());
+        historyDAO = new HistoryDAO(getActivity().getApplicationContext());
 
-            bleDeviceDAO = new BleDeviceDAO(getActivity().getApplicationContext());
-            devicesList = bleDeviceDAO.getAll();
-            devicesAdapter.setList(devicesList);
-        } else refreshDevicesAdapter();
-        Log.d("list_init", devicesList.size()+" ");
+        bleDeviceDAO = new BleDeviceDAO(getActivity().getApplicationContext());
+        devicesList = bleDeviceDAO.getAll();
+        devicesAdapter.setList(devicesList);
 
         devicesListView = (SwipeMenuListView)layout.findViewById(R.id.listView);
         devicesListView.setAdapter(devicesAdapter);
@@ -153,6 +149,7 @@ public class list_fragment extends Fragment {
     private void History_dialog_init() {
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         HistoryDialogView = inflater.inflate(R.layout.dialog_history, null);
+
         historyListAdapter = new HistoryListAdapter();
         historyListAdapter.setList(new ArrayList<History>());
         historyListAdapter.setActivity(getActivity());
@@ -289,14 +286,14 @@ public class list_fragment extends Fragment {
                 if (newDevice == null) {
                     newDevice = new BleDevice(dev.getName(), DataFormat.OTHER, dev, false, true, false, true, -1111, -1111);
 
-                    newDevice.connect(getActivity());
-                    newDevice.setId(bleDeviceDAO.insert(newDevice));
+                    newDevice.connect(list_fragment.this);
                     devicesList.add(newDevice);
+                    bleDeviceDAO.insert(newDevice);
 
                     refreshDevicesAdapter();
                 } else {
                     if (!newDevice.isConnecting() && !newDevice.isConnected()) {
-                        newDevice.connect(getActivity());
+                        newDevice.connect(list_fragment.this);
                     }
                 }
 
@@ -310,8 +307,6 @@ public class list_fragment extends Fragment {
         @Override
         public void onClick(View view) {
             foundDevicesArray.clear();
-
-            ((MainActivity)getActivity()).mBLEClient.SetScanCallback(scanCallback);
             ((MainActivity)getActivity()).mBLEClient.BLEScan(true);
 
             BLElistAdapter.clear();
@@ -322,7 +317,6 @@ public class list_fragment extends Fragment {
 
     // setting dialog
     private OnMenuItemClickListener devicesListView_OnMenuItemClickListener = new OnMenuItemClickListener() {
-
         @Override
         public boolean onMenuItemClick(final int position, SwipeMenu menu, int index) {
             final BleDevice device = devicesList.get(position);
@@ -379,7 +373,7 @@ public class list_fragment extends Fragment {
                                     if (device.isConnected())
                                         device.disconnect();
                                     else
-                                        device.connect(getActivity());
+                                        device.connect(list_fragment.this);
                                 }
                             }).show();
 

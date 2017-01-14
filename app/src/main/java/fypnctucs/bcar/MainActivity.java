@@ -20,7 +20,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.RemoteException;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.NavigationView.OnNavigationItemSelectedListener;
 import android.support.v4.app.ActivityCompat;
@@ -46,24 +45,22 @@ import fypnctucs.bcar.ble.BLEClient;
 import fypnctucs.bcar.fragment.about_fragment;
 import fypnctucs.bcar.fragment.list_fragment;
 import fypnctucs.bcar.fragment.map_fragment;
+import fypnctucs.bcar.fragment.more_fragment;
 import fypnctucs.bcar.fragment.notification_fragment;
 import fypnctucs.bcar.fragment.setting_fragment;
 import fypnctucs.bcar.fragment.warming_fragment;
 import fypnctucs.bcar.history.History;
+import fypnctucs.bcar.Service_ble_connection.ServiceBinder;
 
 public class MainActivity extends AppCompatActivity implements OnNavigationItemSelectedListener {
 
-    private Fragment list_fragment, map_fragment, notification_fragment, setting_fragment, about_fragment;
+    private Fragment list_fragment, map_fragment, notification_fragment, more_fragment, setting_fragment, about_fragment;
 
     public BLEClient mBLEClient;
     private LocationManager mLocationManager;
 
-    public int fragmentPos;
+    private int fragmentPos;
     private boolean warming;
-
-    IService_ble_connection iService_ble_connection;
-    private BleServiceConnection bleServiceConnection = new BleServiceConnection();
-    private boolean isBound = false;
 
     private boolean isServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
@@ -85,12 +82,13 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             permissionRequest();
         }
 
-        Log.d("start?", isServiceRunning(Service_ble_connection.class)+"");
+        Log.d("start?", Service_ble_connection.is_start+"");
 
-        if (!isServiceRunning(Service_ble_connection.class))
-            startService(new Intent(this, Service_ble_connection.class));
-
-        bindService(new Intent(this, Service_ble_connection.class), bleServiceConnection, Service.BIND_AUTO_CREATE);
+        //if (!isServiceRunning(Service_ble_connection.class))
+         //   startService(new Intent(this, Service_ble_connection.class));
+        Intent intent = new Intent(this, Service_ble_connection.class);
+        startService(intent);
+        bindService(intent, bleServiceConnection, Service.BIND_AUTO_CREATE);
 
         geocoder = new Geocoder(this);
 
@@ -118,24 +116,12 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         navigationView.setNavigationItemSelectedListener(this);
 
         // fragment init
-        list_fragment = map_fragment = notification_fragment = setting_fragment = about_fragment = null;
+        list_fragment = map_fragment = notification_fragment = more_fragment = setting_fragment = about_fragment = null;
         if (savedInstanceState == null) {
             fragmentPos = 0;
             selectItem(0);
         }
     }
-
-    public list_fragment getListFragment() {
-        return (list_fragment)list_fragment;
-    }
-
-    // binder controller
-    private final IMainActivity.Stub binder = new IMainActivity.Stub() {
-        @Override
-        public void callStatus(String msg) throws RemoteException {
-            MainActivity.this.status(msg);
-        }
-    };
 
     @Override
     protected void onResume() {
@@ -170,23 +156,22 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     }
 
     //  Ble Service Connection Listener
+    private BleServiceConnection bleServiceConnection = new BleServiceConnection();
+    private Service_ble_connection service_ble_connection;
+    private boolean isBound;
     private class BleServiceConnection implements ServiceConnection {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            iService_ble_connection = IService_ble_connection.Stub.asInterface(service);
-            try {
-                iService_ble_connection.setBinder(binder);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+            service_ble_connection = ((ServiceBinder)service).getService();
             isBound = true;
+            //service_ble_connection.setActivity(MainActivity.this);
             Log.d("onServiceConnected", "Connected");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            iService_ble_connection = null;
+            service_ble_connection = null;
             isBound = false;
             Log.d("onServiceDisconnected", "Disconnected");
         }
@@ -209,10 +194,12 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
             selectItem(1);
         } else if (id == R.id.navigation_map) {
             selectItem(2);
-        } else if (id == R.id.navigation_setting) {
+        } else if (id == R.id.navigation_more) {
             selectItem(3);
-        } else if (id == R.id.navigation_about) {
+        } else if (id == R.id.navigation_setting) {
             selectItem(4);
+        } else if (id == R.id.navigation_about) {
+            selectItem(5);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -235,11 +222,16 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
                 fragment = map_fragment;
                 break;
             case 3:
+                if (more_fragment == null)
+                    more_fragment = new more_fragment();
+                fragment = more_fragment;
+                break;
+            case 4:
                 if (setting_fragment == null)
                     setting_fragment = new setting_fragment();
                 fragment = setting_fragment;
                 break;
-            case 4:
+            case 5:
                 if (about_fragment == null)
                     about_fragment = new about_fragment();
                 fragment = about_fragment;
@@ -251,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
         }
 
 
-        if (!warming || position == 3 || position == 4) {
+        if (!warming || position == 4 || position == 5) {
 
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             ft.replace(R.id.content_fragment, fragment);
@@ -276,9 +268,12 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
                 title = getResources().getString(R.string.navigation_map);
                 break;
             case 3:
-                title = "設定";
+                title = getResources().getString(R.string.navigation_more);
                 break;
             case 4:
+                title = "設定";
+                break;
+            case 5:
                 title = "關於";
                 break;
             default:
@@ -347,27 +342,6 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
 
     protected Geocoder geocoder;
 
-    public void findAddress(final History item) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String address = "";
-                rwl.lock();
-                try {
-                    address = geocoder.getFromLocation(item.getLat(), item.getLng(), 1).get(0).getAddressLine(0);
-                } catch (IOException e) {
-                    address = "...";
-                    e.printStackTrace();
-                } finally {
-                    item.setAddress(address);
-                    ((list_fragment)list_fragment).History_update(item);
-                }
-                rwl.unlock();
-                item.busy = false;
-            }
-        }).start();
-
-    }
     // msg handler
     private class LocationTextView {
         protected TextView view;
@@ -380,14 +354,30 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
     public void status(String msg) {
         mHandler.obtainMessage(TOAST_STATUS, msg).sendToTarget();
     }
-    public void getLocation(LocationListener locationListener) {
-        mHandler.obtainMessage(BLEDEVICE_REFRESH_LOCATION, locationListener).sendToTarget();
-    }
+    public void findAddress(final History item) {
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String address = "";
+                rwl.lock();
+                try {
+                    address = geocoder.getFromLocation(item.getLat(), item.getLng(), 1).get(0).getAddressLine(0);
+                } catch (IOException e) {
+                    address = "無法使用網絡";
+                    e.printStackTrace();
+                } finally {
+                    item.setAddress(address);
+                    ((list_fragment)list_fragment).History_update(item);
+                }
+                rwl.unlock();
+                item.busy = false;
+            }
+        }).start();
+
+    }
     protected final static int TOAST_STATUS = 103;
     protected final static int SET_TEXT = 99;
-    final static int BLEDEVICE_REFRESH_LOCATION = 105;
-    final static int POST = 106;
     static Lock rwl = new ReentrantLock();
 
     public final Handler mHandler = new Handler() {
@@ -399,9 +389,6 @@ public class MainActivity extends AppCompatActivity implements OnNavigationItemS
                     break;
                 case TOAST_STATUS:
                     Toast.makeText(MainActivity.this, (String)msg.obj, Toast.LENGTH_SHORT).show();
-                    break;
-                case BLEDEVICE_REFRESH_LOCATION:
-                    getCurrentLocation(0, 0, (LocationListener) msg.obj);
                     break;
             }
         }

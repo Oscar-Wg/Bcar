@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -23,21 +22,5 @@
         android:text="..."
         android:textColor="@android:color/black"
         android:textSize="18sp" />
-
-    <ImageView
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        app:srcCompat="@drawable/ic_speaker"
-        android:id="@+id/speaker_btn"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/find_btn" />
-
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        app:srcCompat="@drawable/ic_finding"
-        android:id="@+id/find_btn"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>

@@ -1,20 +1,16 @@
 package fypnctucs.bcar.device;
 
-import com.loopj.android.http.*;
-
 import android.bluetooth.BluetoothDevice;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Parcel;
-import android.util.Log;
 
 import java.io.ObjectInput;
 import java.util.ArrayList;
 
 import fypnctucs.bcar.MyDBHelper;
-import fypnctucs.bcar.phpRequest;
 
 /**
  * Created by kamfu.wong on 3/10/2016.
@@ -69,22 +65,6 @@ public class BleDeviceDAO {
 
         long id = db.insert(TABLE_NAME, null, cv);
 
-        // post
-        RequestParams params = new RequestParams();
-        params.put(KEY_ID, id);
-        params.put("USERNAME", "test");
-        params.put(NAME_COLUMN, device.getName());
-        params.put(TYPE_COLUMN, device.getType());
-        params.put(DEVICE_COLUMN, dev);
-        params.put(NOTIFIED_COLUMN, device.isNotified());
-        params.put(AUTOCONNECT_COLUMN, device.isAutoConnect());
-        params.put(AUTORECORD_COLUMN, device.isAutoRecord());
-        params.put(LASTLNG_COLUMN, device.getLast_lng());
-        params.put(LASTLAT_COLUMN, device.getLast_lat());
-
-        phpRequest.post("http://140.113.69.201:1314/ZT/MAIN/PHP/device_POST.php", params);
-
-
         return id;
     }
 
@@ -105,21 +85,6 @@ public class BleDeviceDAO {
         cv.put(LASTLAT_COLUMN, device.getLast_lat());
 
         String where = KEY_ID + "=" + device.getId();
-
-        // post
-        RequestParams params = new RequestParams();
-        params.put(KEY_ID, device.getId());
-        params.put("USERNAME", "test");
-        params.put(NAME_COLUMN, device.getName());
-        params.put(TYPE_COLUMN, device.getType());
-        params.put(DEVICE_COLUMN, dev);
-        params.put(NOTIFIED_COLUMN, device.isNotified());
-        params.put(AUTOCONNECT_COLUMN, device.isAutoConnect());
-        params.put(AUTORECORD_COLUMN, device.isAutoRecord());
-        params.put(LASTLNG_COLUMN, device.getLast_lng());
-        params.put(LASTLAT_COLUMN, device.getLast_lat());
-
-        phpRequest.post("http://140.113.69.201:1314/ZT/MAIN/PHP/device_UPDATE.php", params);
 
         return db.update(TABLE_NAME, cv, where, null) > 0;
     }

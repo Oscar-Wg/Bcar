@@ -9,20 +9,18 @@ public class History {
     private String address;
     private String btaddress;
     private String date;
-    private String status;
     private double lng, lat;
     public boolean busy = false;
 
     public History() {
 
     }
-    public History(String btaddress, String date, double lat, double lng, String address, String status) {
+    public History(String btaddress, String date, double lat, double lng, String address) {
         this.btaddress = btaddress;
         this.date = date;
         this.lat = lat;
         this.lng = lng;
         this.address = address;
-        this.status = status;
     }
 
     public void setId(long id) {
@@ -31,10 +29,6 @@ public class History {
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public double getLng() {
@@ -59,9 +53,5 @@ public class History {
 
     public String getAddress() {
         return address;
-    }
-
-    public String getStatus() {
-        return status;
     }
 }
